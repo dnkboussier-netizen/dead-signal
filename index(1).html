@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEAD SIGNAL — Kleding als een verloren uitzending</title>
+<meta name="description" content="DEAD SIGNAL — Analog horror streetwear. Elk kledingstuk bevat een verborgen QR-code met lore.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #070707;
+    --panel: #0f0f0f;
+    --border: #1a1a1a;
+    --border2: #252525;
+    --signal: #ff4500;
+    --signal-dim: #6b1c00;
+    --white: #ebebeb;
+    --muted: #555;
+    --cream: #b8b0a0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Share Tech Mono', monospace;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE ── */
+  .noise {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9000;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+  }
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 8999;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px);
+  }
+  .sweep {
+    position: fixed; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to bottom, transparent, rgba(255,69,0,0.1), transparent);
+    pointer-events: none; z-index: 8998;
+    animation: sweep 7s linear infinite;
+  }
+  @keyframes sweep { from { top: -2px; } to { top: 100vh; } }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(7,7,7,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 52px;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 4px; color: var(--white);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--signal); }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a {
+    font-size: 10px; letter-spacing: 3px; color: var(--muted);
+    text-decoration: none; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--signal); }
+  .nav-cart {
+    font-size: 10px; letter-spacing: 2px; color: var(--white);
+    text-decoration: none; padding: 6px 14px;
+    border: 1px solid var(--border2); transition: border-color 0.2s;
+  }
+  .nav-cart:hover { border-color: var(--signal); color: var(--signal); }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: flex-end; padding: 100px 24px 60px;
+    position: relative; border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 70% 40%, rgba(255,69,0,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 80%, rgba(255,69,0,0.03) 0%, transparent 60%);
+  }
+
+  .hero-tag {
+    font-size: 10px; letter-spacing: 4px; color: var(--signal);
+    text-transform: uppercase; margin-bottom: 24px; position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-tag::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    background: var(--signal); border-radius: 50%;
+    animation: blink 1.4s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 22vw, 200px);
+    line-height: 0.82; letter-spacing: -2px;
+    position: relative; z-index: 1;
+    animation: glitch 12s ease-in-out infinite;
+    text-shadow: 3px 0 var(--signal), -3px 0 rgba(0,140,255,0.25);
+  }
+  @keyframes glitch {
+    0%,92%,100%{ transform:translate(0); clip-path:none; }
+    93%{ transform:translate(-4px,1px); clip-path:polygon(0 20%,100% 20%,100% 45%,0 45%); }
+    94%{ transform:translate(4px,-1px); clip-path:polygon(0 55%,100% 55%,100% 75%,0 75%); }
+    95%{ transform:translate(-2px,2px); clip-path:none; }
+  }
+
+  .hero-sub {
+    font-family: 'VT323', monospace;
+    font-size: clamp(16px, 4vw, 22px);
+    letter-spacing: 8px; color: var(--muted);
+    margin-top: 12px; position: relative; z-index: 1;
+  }
+
+  .hero-row {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-top: 48px; position: relative; z-index: 1;
+    flex-wrap: wrap; gap: 24px;
+  }
+  .hero-desc {
+    font-size: 12px; line-height: 2; color: var(--cream); max-width: 340px;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--signal); color: #000;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    text-decoration: none; padding: 14px 28px;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .hero-cta:hover { background: var(--white); }
+  .hero-cta-ghost {
+    display: inline-flex; align-items: center; gap: 12px;
+    border: 1px solid var(--border2); color: var(--cream);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    text-decoration: none; padding: 14px 28px;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .hero-cta-ghost:hover { border-color: var(--signal); color: var(--signal); }
+
+  .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .hero-scroll {
+    position: absolute; bottom: 24px; right: 24px; z-index: 1;
+    font-size: 10px; letter-spacing: 3px; color: var(--muted);
+    writing-mode: vertical-rl; text-orientation: mixed;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-scroll::before {
+    content: ''; width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--signal), transparent);
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 12px 0; overflow: hidden; position: relative;
+    background: var(--panel);
+  }
+  .ticker-track {
+    display: flex; gap: 60px; width: max-content;
+    animation: ticker 25s linear infinite;
+  }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .ticker-item {
+    font-size: 11px; letter-spacing: 3px; color: var(--muted);
+    white-space: nowrap; text-transform: uppercase;
+  }
+  .ticker-item span { color: var(--signal); margin-right: 8px; }
+
+  /* ── SECTION BASE ── */
+  section { padding: 80px 0; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .label {
+    font-size: 10px; letter-spacing: 5px; color: var(--signal);
+    text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .big-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 10vw, 80px);
+    line-height: 1; margin-bottom: 48px;
+  }
+
+  /* ── CONCEPT SECTION ── */
+  .concept-section { border-bottom: 1px solid var(--border); }
+
+  .concept-layout {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+  }
+  @media(max-width:600px){ .concept-layout{grid-template-columns:1fr;} }
+
+  .concept-block {
+    background: var(--panel); padding: 32px;
+    border-left: 2px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+    cursor: default;
+  }
+  .concept-block:hover { border-left-color: var(--signal); background: #141414; }
+
+  .cb-num { font-size: 10px; letter-spacing: 3px; color: var(--signal-dim); margin-bottom: 16px; }
+  .cb-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; margin-bottom: 12px; }
+  .cb-text { font-size: 12px; line-height: 1.9; color: #666; }
+
+  /* ── FEATURED PRODUCTS ── */
+  .products-section { border-bottom: 1px solid var(--border); }
+
+  .products-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  }
+  @media(max-width:700px){ .products-grid{grid-template-columns:1fr 1fr;} }
+  @media(max-width:420px){ .products-grid{grid-template-columns:1fr;} }
+
+  .product-card {
+    background: var(--panel); position: relative; overflow: hidden;
+    cursor: pointer; text-decoration: none; color: inherit;
+    display: block; transition: background 0.3s;
+  }
+  .product-card:hover { background: #141414; }
+
+  .product-img {
+    aspect-ratio: 3/4; width: 100%; overflow: hidden;
+    position: relative; background: #0d0d0d;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Mockup SVG visuals */
+  .product-img svg { width: 60%; height: 60%; opacity: 0.85; }
+
+  .product-badge {
+    position: absolute; top: 12px; left: 12px;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 4px 8px; background: var(--signal); color: #000;
+  }
+
+  .product-info { padding: 20px; }
+  .product-season { font-size: 10px; letter-spacing: 3px; color: var(--signal); margin-bottom: 6px; }
+  .product-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; margin-bottom: 4px; }
+  .product-desc { font-size: 11px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+  .product-price { font-size: 14px; color: var(--white); letter-spacing: 1px; }
+  .product-price span { color: var(--muted); font-size: 11px; margin-left: 4px; }
+
+  /* ── QR SECTION ── */
+  .qr-section { background: var(--panel); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  .qr-layout {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; align-items: center;
+  }
+  @media(max-width:600px){ .qr-layout{grid-template-columns:1fr;} }
+
+  .qr-visual {
+    aspect-ratio: 1; background: var(--black);
+    border: 1px solid var(--border); position: relative;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+
+  .qr-grid {
+    display: grid; grid-template-columns: repeat(9,1fr);
+    gap: 4px; padding: 24px; width: 100%;
+  }
+  .qc { aspect-ratio:1; background: var(--signal); animation: qflash 1.2s ease-in-out infinite; }
+  .qc:nth-child(2n) { background: var(--white); animation-delay: 0.2s; }
+  .qc:nth-child(3n) { background: var(--border2); animation-delay: 0.4s; }
+  .qc:nth-child(5n) { animation-delay: 0.6s; }
+  .qc:nth-child(7n) { background: var(--signal-dim); animation-delay: 0.1s; }
+  @keyframes qflash { 0%,100%{opacity:0.9} 50%{opacity:0.3} }
+
+  .qr-label {
+    position: absolute; bottom: 14px; left: 14px;
+    font-size: 9px; letter-spacing: 2px; color: var(--signal);
+  }
+  .qr-corner {
+    position: absolute; border-color: var(--signal); border-style: solid;
+    width: 20px; height: 20px;
+  }
+  .qr-corner.tl { top:10px; left:10px; border-width: 2px 0 0 2px; }
+  .qr-corner.tr { top:10px; right:10px; border-width: 2px 2px 0 0; }
+  .qr-corner.bl { bottom:10px; left:10px; border-width: 0 0 2px 2px; }
+  .qr-corner.br { bottom:10px; right:10px; border-width: 0 2px 2px 0; }
+
+  .qr-text .big-title { margin-bottom: 20px; }
+  .qr-body { font-size: 12px; line-height: 2; color: var(--cream); margin-bottom: 28px; }
+  .qr-link {
+    display: inline-block; font-size: 11px; letter-spacing: 3px;
+    color: var(--signal); text-transform: uppercase; text-decoration: none;
+    border-bottom: 1px solid var(--signal-dim); padding-bottom: 2px;
+    transition: border-color 0.2s;
+  }
+  .qr-link:hover { border-color: var(--signal); }
+
+  /* ── SEIZOEN STRIP ── */
+  .season-strip {
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(3,1fr);
+  }
+  @media(max-width:500px){ .season-strip{grid-template-columns:1fr;} }
+
+  .season-block {
+    padding: 40px 28px; border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .season-block:last-child { border-right: none; }
+
+  .season-num { font-size: 10px; letter-spacing: 3px; color: var(--signal); margin-bottom: 10px; }
+  .season-name { font-family: 'Bebas Neue', sans-serif; font-size: 32px; margin-bottom: 8px; }
+  .season-status {
+    font-size: 10px; letter-spacing: 2px; padding: 3px 8px;
+    display: inline-block; margin-bottom: 12px;
+  }
+  .status-live { background: var(--signal); color: #000; }
+  .status-soon { border: 1px solid var(--border2); color: var(--muted); }
+  .season-desc { font-size: 11px; color: #555; line-height: 1.7; }
+
+  /* ── NEWSLETTER ── */
+  .news-section { border-bottom: 1px solid var(--border); }
+
+  .news-inner {
+    display: flex; gap: 60px; align-items: center; flex-wrap: wrap;
+  }
+  .news-text { flex: 1; min-width: 200px; }
+  .news-title { font-family: 'Bebas Neue', sans-serif; font-size: 40px; line-height: 1; margin-bottom: 12px; }
+  .news-sub { font-size: 12px; color: #555; line-height: 1.8; }
+
+  .news-form { display: flex; gap: 0; flex: 1; min-width: 240px; }
+  .news-input {
+    flex: 1; background: var(--panel); border: 1px solid var(--border2);
+    border-right: none; padding: 14px 16px; color: var(--white);
+    font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    letter-spacing: 1px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .news-input:focus { border-color: var(--signal); }
+  .news-input::placeholder { color: var(--muted); }
+  .news-btn {
+    background: var(--signal); border: none; color: #000;
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px;
+    cursor: pointer; transition: background 0.2s; white-space: nowrap;
+  }
+  .news-btn:hover { background: var(--white); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px 0 32px; border-top: 1px solid var(--border);
+  }
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px; margin-bottom: 48px;
+  }
+  @media(max-width:600px){ .footer-grid{grid-template-columns:1fr;} }
+
+  .footer-brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; letter-spacing: 6px; margin-bottom: 12px;
+  }
+  .footer-brand-desc { font-size: 11px; color: #444; line-height: 1.8; max-width: 220px; }
+
+  .footer-col-title { font-size: 10px; letter-spacing: 3px; color: var(--signal); margin-bottom: 16px; }
+  .footer-links { list-style: none; }
+  .footer-links li { margin-bottom: 10px; }
+  .footer-links a { font-size: 12px; color: #555; text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border); padding-top: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .footer-copy { font-size: 10px; letter-spacing: 2px; color: #333; }
+  .footer-status { font-size: 10px; letter-spacing: 2px; color: var(--signal); display: flex; align-items: center; gap: 6px; }
+  .footer-status::before { content:''; width:5px; height:5px; background:var(--signal); border-radius:50%; animation: blink 2s step-end infinite; }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="scanlines"></div>
+<div class="sweep"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">DEAD<span>·</span>SIGNAL</a>
+  <ul class="nav-links">
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="lore.html">Lore</a></li>
+    <li><a href="about.html">Over ons</a></li>
+  </ul>
+  <a href="shop.html" class="nav-cart">WINKEL →</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-tag">Seizoen 01 — Static — Nu beschikbaar</div>
+  <h1 class="hero-title">DEAD<br>SIGNAL</h1>
+  <div class="hero-sub">— UITZENDING ONDERBROKEN —</div>
+  <div class="hero-row">
+    <p class="hero-desc">
+      Kleding als een verloren uitzending.<br>
+      Elk stuk bevat een verborgen QR-code<br>
+      met analog horror lore. Scan. Ontdek. Verdwijn.
+    </p>
+    <div class="hero-buttons">
+      <a href="shop.html" class="hero-cta">SHOP NU →</a>
+      <a href="lore.html" class="hero-cta-ghost">SCAN LORE</a>
+    </div>
+  </div>
+  <div class="hero-scroll">SCROLL</div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item"><span>▸</span> SEIZOEN 01 — STATIC — NU BESCHIKBAAR</span>
+    <span class="ticker-item"><span>▸</span> GRATIS VERZENDING BOVEN €75</span>
+    <span class="ticker-item"><span>▸</span> ELKE QR-CODE VERBERGT EEN VERHAAL</span>
+    <span class="ticker-item"><span>▸</span> NEDERLAND / BELGIË / DUITSLAND</span>
+    <span class="ticker-item"><span>▸</span> BROADCAST ONDERBROKEN SINDS 1987</span>
+    <span class="ticker-item"><span>▸</span> SEIZOEN 01 — STATIC — NU BESCHIKBAAR</span>
+    <span class="ticker-item"><span>▸</span> GRATIS VERZENDING BOVEN €75</span>
+    <span class="ticker-item"><span>▸</span> ELKE QR-CODE VERBERGT EEN VERHAAL</span>
+    <span class="ticker-item"><span>▸</span> NEDERLAND / BELGIË / DUITSLAND</span>
+    <span class="ticker-item"><span>▸</span> BROADCAST ONDERBROKEN SINDS 1987</span>
+  </div>
+</div>
+
+<!-- FEATURED PRODUCTS -->
+<section class="products-section">
+  <div class="container">
+    <div class="label">Uitgelicht</div>
+    <h2 class="big-title">SEIZOEN 01<br>— STATIC</h2>
+    <div class="products-grid">
+
+      <!-- Product 1 -->
+      <a href="product.html?id=s01-hoodie" class="product-card">
+        <div class="product-img">
+          <div class="product-badge">NIEUW</div>
+          <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30 20 L10 45 L25 50 L25 120 L95 120 L95 50 L110 45 L90 20 L75 28 C72 35 48 35 45 28 Z" fill="#111" stroke="#2a2a2a" stroke-width="1"/>
+            <text x="60" y="78" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="14" fill="#ff4500" letter-spacing="2">DS</text>
+            <text x="60" y="92" text-anchor="middle" font-family="monospace" font-size="6" fill="#333" letter-spacing="1">STATIC 01</text>
+            <line x1="40" y1="100" x2="80" y2="100" stroke="#1e1e1e" stroke-width="1"/>
+            <line x1="35" y1="104" x2="85" y2="104" stroke="#151515" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-season">S01 — STATIC</div>
+          <div class="product-name">BROADCAST HOODIE</div>
+          <div class="product-desc">Oversized hoodie. QR-code in de voering. Seizoen 01 lore.</div>
+          <div class="product-price">€ 69,00 <span>incl. BTW</span></div>
+        </div>
+      </a>
+
+      <!-- Product 2 -->
+      <a href="product.html?id=s01-longsleeve" class="product-card">
+        <div class="product-img">
+          <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M35 20 L8 50 L22 56 L22 120 L98 120 L98 56 L112 50 L85 20 Z" fill="#0d0d0d" stroke="#2a2a2a" stroke-width="1"/>
+            <text x="60" y="75" text-anchor="middle" font-family="monospace" font-size="7" fill="#ff4500" letter-spacing="3">DEAD</text>
+            <text x="60" y="86" text-anchor="middle" font-family="monospace" font-size="7" fill="#ff4500" letter-spacing="3">SIGNAL</text>
+            <rect x="45" y="92" width="30" height="1" fill="#1a1a1a"/>
+            <text x="60" y="102" text-anchor="middle" font-family="monospace" font-size="5" fill="#2a2a2a" letter-spacing="2">KDSN 1987</text>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-season">S01 — STATIC</div>
+          <div class="product-name">KDSN LONGSLEEVE</div>
+          <div class="product-desc">Logo van het verdwenen tv-station. QR-code op de mouw.</div>
+          <div class="product-price">€ 49,00 <span>incl. BTW</span></div>
+        </div>
+      </a>
+
+      <!-- Product 3 -->
+      <a href="product.html?id=s01-tee" class="product-card">
+        <div class="product-img">
+          <svg viewBox="0 0 120 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M35 20 L10 48 L24 54 L24 110 L96 110 L96 54 L110 48 L85 20 Z" fill="#101010" stroke="#252525" stroke-width="1"/>
+            <text x="60" y="72" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="22" fill="#e8e8e8" letter-spacing="1">NO</text>
+            <text x="60" y="90" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="22" fill="#e8e8e8" letter-spacing="1">SIGNAL</text>
+            <rect x="38" y="94" width="44" height="1" fill="#ff4500" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-season">S01 — STATIC</div>
+          <div class="product-name">NO SIGNAL TEE</div>
+          <div class="product-desc">Heavyweight T-shirt. Geborduurd QR-label aan de binnenkant.</div>
+          <div class="product-price">€ 39,00 <span>incl. BTW</span></div>
+        </div>
+      </a>
+
+    </div>
+    <div style="text-align:center;margin-top:40px;">
+      <a href="shop.html" class="hero-cta-ghost">BEKIJK ALLE PRODUCTEN →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPT -->
+<section class="concept-section">
+  <div class="container">
+    <div class="label">Concept</div>
+    <h2 class="big-title">WAT MAAKT<br>DIT ANDERS</h2>
+    <div class="concept-layout">
+      <div class="concept-block">
+        <div class="cb-num">— 01</div>
+        <div class="cb-title">VERBORGEN LORE</div>
+        <div class="cb-text">Elk kledingstuk heeft een QR-code in de voering. Scan je die, land je op een geheime pagina met analog horror lore, geluiden, en verloren uitzendingen van het fictieve tv-station KDSN.</div>
+      </div>
+      <div class="concept-block">
+        <div class="cb-num">— 02</div>
+        <div class="cb-title">LEVEND VERHAAL</div>
+        <div class="cb-text">Elke collectie is een nieuw "seizoen" van KDSN. Het verhaal groeit. QR-pagina's uit seizoen 01 veranderen als seizoen 02 uitkomt. Klanten die van het begin af aan volgen, ontdekken meer.</div>
+      </div>
+      <div class="concept-block">
+        <div class="cb-num">— 03</div>
+        <div class="cb-title">ARG NETWERK</div>
+        <div class="cb-text">Klanten die meerdere stukken scannen, verbinden de puzzelstukken. Een Alternate Reality Game verspreid over de kleding. Niemand heeft dit ooit gedaan in fashion.</div>
+      </div>
+      <div class="concept-block">
+        <div class="cb-num">— 04</div>
+        <div class="cb-title">ANALOG HORROR</div>
+        <div class="cb-text">Esthetiek gebaseerd op VHS-corruptie, verloren signalen, en CRT-schermen uit de jaren '80. Donker, uniek, viraal-waardig op TikTok en Instagram.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QR SECTION -->
+<section class="qr-section">
+  <div class="container">
+    <div class="qr-layout">
+      <div class="qr-visual">
+        <div class="qr-corner tl"></div>
+        <div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div>
+        <div class="qr-corner br"></div>
+        <div class="qr-grid">
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+          <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+        </div>
+        <div class="qr-label">SCAN / LORE / VERBORGEN</div>
+      </div>
+      <div class="qr-text">
+        <div class="label">QR Systeem</div>
+        <h2 class="big-title">SCAN<br>HET SIGNAAL</h2>
+        <p class="qr-body">
+          Elke hoodie, shirt, en longsleeve bevat een kleine QR-code gestikt in de voering. Scan je die code, kom je op een exclusieve pagina met audio, beelden, en tekst van het verdwenen station KDSN. Het is meer dan kleding — het is een wereld.
+        </p>
+        <a href="lore.html" class="qr-link">BEKIJK LORE PAGINA →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEIZOENEN -->
+<div class="season-strip">
+  <div class="season-block">
+    <div class="season-num">SEIZOEN 01</div>
+    <div class="season-name">STATIC</div>
+    <span class="season-status status-live">NU LIVE</span>
+    <div class="season-desc">Het begin. Het signaal gaat verloren. Station KDSN verdwijnt van de lucht. Broadcast Orange accent.</div>
+  </div>
+  <div class="season-block">
+    <div class="season-num">SEIZOEN 02</div>
+    <div class="season-name">INTERFERENCE</div>
+    <span class="season-status status-soon">BINNENKORT</span>
+    <div class="season-desc">Het signaal keert terug. Corrupte uitzendingen. Blauwe accenten. Nieuwe QR-lore.</div>
+  </div>
+  <div class="season-block">
+    <div class="season-num">SEIZOEN 03</div>
+    <div class="season-name">BROADCAST</div>
+    <span class="season-status status-soon">JAAR 1</span>
+    <div class="season-desc">Het station spreekt weer. Collab. Pop-up Amsterdam. Volledig ARG onthuld.</div>
+  </div>
+</div>
+
+<!-- NEWSLETTER -->
+<section class="news-section">
+  <div class="container">
+    <div class="news-inner">
+      <div class="news-text">
+        <div class="news-title">ONTVANG<br>HET SIGNAAL</div>
+        <div class="news-sub">Nieuwe collecties. Geheime QR-pagina's. KDSN updates.<br>Geen spam. Alleen wat telt.</div>
+      </div>
+      <div class="news-form">
+        <input type="email" class="news-input" placeholder="jouw@email.nl">
+        <button class="news-btn">INSCHRIJVEN</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">DEAD SIGNAL</div>
+        <div class="footer-brand-desc">Analog horror streetwear. Kleding als een verloren uitzending. Elk stuk bevat een verhaal.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">NAVIGATIE</div>
+        <ul class="footer-links">
+          <li><a href="shop.html">Shop</a></li>
+          <li><a href="lore.html">Lore</a></li>
+          <li><a href="about.html">Over ons</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">INFO</div>
+        <ul class="footer-links">
+          <li><a href="#">Verzending</a></li>
+          <li><a href="#">Retourneren</a></li>
+          <li><a href="#">Maatgids</a></li>
+          <li><a href="#">Privacybeleid</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 DEAD SIGNAL — KVK: XXXXXXXX — ALLE RECHTEN VOORBEHOUDEN</div>
+      <div class="footer-status">SEIZOEN 01 LIVE</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

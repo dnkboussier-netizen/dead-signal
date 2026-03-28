@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KDSN — TRANSMISSION FOUND</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#030303; --panel:#0a0a0a; --border:#161616;
+    --signal:#ff4500; --white:#ddd; --muted:#444;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--black);color:var(--white);font-family:'Share Tech Mono',monospace;overflow-x:hidden;min-height:100vh;}
+
+  /* GLITCH INTRO */
+  #intro{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:introOut 0.5s 3.5s ease forwards;}
+  @keyframes introOut{to{opacity:0;pointer-events:none;}}
+  .intro-static{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.3;animation:staticFlicker 0.1s linear infinite;}
+  @keyframes staticFlicker{0%{opacity:0.2}50%{opacity:0.4}100%{opacity:0.2}}
+  .intro-text{font-family:'VT323',monospace;font-size:clamp(24px,8vw,48px);color:var(--signal);letter-spacing:4px;text-align:center;position:relative;z-index:1;animation:textGlitch 3.5s linear forwards;}
+  @keyframes textGlitch{
+    0%{opacity:0;transform:translate(0)}
+    5%{opacity:1;transform:translate(-4px,2px)}
+    10%{transform:translate(4px,-2px)}
+    15%{transform:translate(0)}
+    40%{opacity:1}
+    80%{opacity:1;transform:translate(0)}
+    90%{opacity:0.8;transform:translate(-6px,0)}
+    95%{opacity:1;transform:translate(6px,0)}
+    100%{opacity:1;transform:translate(0)}
+  }
+  .intro-sub{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:4px;color:#444;margin-top:16px;animation:fadeIn 1s 1s both;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  /* SCANLINES */
+  .scanlines{position:fixed;inset:0;pointer-events:none;z-index:100;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);}
+  .noise{position:fixed;inset:0;pointer-events:none;z-index:99;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;}
+
+  /* CRT CONTAINER */
+  .crt {
+    max-width: 680px; margin: 0 auto; padding: 40px 20px 80px;
+    animation: pageIn 0.8s 3.8s both;
+  }
+  @keyframes pageIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HEADER */
+  .station-header {
+    text-align: center; padding: 40px 0; border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .station-id {
+    font-family:'VT323',monospace; font-size:clamp(48px,12vw,80px);
+    color: var(--signal); letter-spacing: 8px;
+    text-shadow: 0 0 20px rgba(255,69,0,0.5), 3px 0 rgba(255,69,0,0.2);
+    animation: flicker 6s ease-in-out infinite;
+  }
+  @keyframes flicker{0%,95%,100%{opacity:1}96%,98%{opacity:0.6}97%,99%{opacity:1}}
+  .station-sub {
+    font-size: 11px; letter-spacing: 4px; color: var(--muted);
+    margin-top: 8px; line-height: 2;
+  }
+  .on-air {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10px; letter-spacing: 3px; color: var(--signal);
+    margin-top: 16px;
+  }
+  .on-air::before { content:''; width:8px; height:8px; background:var(--signal); border-radius:50%; animation:blink 1s step-end infinite; }
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+  /* TRANSMISSION BLOCKS */
+  .transmission {
+    background: var(--panel); border: 1px solid var(--border);
+    margin-bottom: 24px; position: relative; overflow: hidden;
+  }
+  .tx-header {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: #0d0d0d;
+  }
+  .tx-id { font-size: 10px; letter-spacing: 3px; color: var(--signal); }
+  .tx-date { font-size: 10px; letter-spacing: 2px; color: var(--muted); }
+  .tx-body { padding: 24px 20px; }
+
+  .tx-title {
+    font-family:'VT323',monospace; font-size: 28px; letter-spacing: 3px;
+    color: var(--white); margin-bottom: 16px;
+  }
+  .tx-text {
+    font-size: 12px; line-height: 2; color: #777; margin-bottom: 20px;
+  }
+  .tx-text em { color: var(--signal); font-style: normal; }
+
+  /* AUDIO PLAYER */
+  .audio-player {
+    background: #0a0a0a; border: 1px solid var(--border);
+    padding: 16px 20px; display: flex; align-items: center; gap: 16px;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .audio-player:hover { border-color: var(--signal); }
+  .play-btn {
+    width: 36px; height: 36px; background: var(--signal);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; cursor: pointer; border: none; font-size: 14px;
+    color: #000; transition: background 0.2s;
+  }
+  .play-btn:hover { background: var(--white); }
+  .audio-info { flex: 1; }
+  .audio-title { font-size: 11px; letter-spacing: 2px; color: var(--white); margin-bottom: 4px; }
+  .audio-duration { font-size: 10px; letter-spacing: 1px; color: var(--muted); }
+  .audio-bars {
+    display: flex; gap: 3px; align-items: center; height: 20px;
+  }
+  .bar {
+    width: 3px; background: var(--signal); opacity: 0.4;
+    animation: barAnim 0.8s ease-in-out infinite;
+  }
+  .bar:nth-child(1){height:8px;animation-delay:0s;}
+  .bar:nth-child(2){height:14px;animation-delay:0.1s;}
+  .bar:nth-child(3){height:10px;animation-delay:0.2s;}
+  .bar:nth-child(4){height:18px;animation-delay:0.05s;}
+  .bar:nth-child(5){height:6px;animation-delay:0.15s;}
+  .bar:nth-child(6){height:12px;animation-delay:0.25s;}
+  @keyframes barAnim{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1)}}
+
+  /* IMAGE GLITCH FRAME */
+  .glitch-frame {
+    background: #050505; border: 1px solid var(--border);
+    aspect-ratio: 16/9; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .glitch-frame::before {
+    content:''; position:absolute; inset:0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(255,69,0,0.015) 4px,rgba(255,69,0,0.015) 5px);
+  }
+  .glitch-frame-text {
+    font-family:'VT323',monospace; font-size:clamp(32px,8vw,64px);
+    color: #1a1a1a; letter-spacing: 8px; z-index: 1;
+    animation: frameGlitch 4s ease-in-out infinite;
+    text-align: center; padding: 0 20px;
+  }
+  @keyframes frameGlitch{
+    0%,85%,100%{color:#1a1a1a;text-shadow:none;}
+    86%{color:#ff4500;text-shadow:0 0 10px rgba(255,69,0,0.4);transform:translate(-3px,0);}
+    87%{color:#1a1a1a;text-shadow:none;transform:translate(3px,0);}
+    88%{color:#333;transform:translate(0);}
+  }
+  .frame-label {
+    position: absolute; bottom: 10px; right: 12px;
+    font-size: 9px; letter-spacing: 2px; color: var(--signal); opacity: 0.6;
+  }
+  .frame-corrupt {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--signal); opacity: 0;
+    animation: corruptLine 6s ease-in-out infinite;
+  }
+  @keyframes corruptLine{0%,90%,100%{opacity:0;top:0%}91%{opacity:0.6;top:30%}92%{opacity:0;top:60%}93%{opacity:0.4;top:80%}94%{opacity:0}}
+
+  /* REDACTED TEXT */
+  .redacted {
+    background: var(--white); color: transparent; user-select: none;
+    position: relative; display: inline;
+  }
+
+  /* COORDINATES */
+  .coords {
+    font-family:'VT323',monospace; font-size:16px; letter-spacing:3px;
+    color: var(--signal); opacity: 0.5;
+  }
+
+  /* DIVIDER */
+  .tx-divider {
+    border: none; border-top: 1px solid var(--border); margin: 40px 0;
+    position: relative;
+  }
+  .tx-divider::after {
+    content: '◈ EINDE TRANSMISSIE ◈';
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    background: var(--black); padding: 0 12px;
+    font-size: 9px; letter-spacing: 4px; color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* BACK LINK */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: 3px; color: var(--muted);
+    text-decoration: none; text-transform: uppercase;
+    border: 1px solid var(--border); padding: 12px 20px;
+    transition: all 0.2s; margin-top: 40px;
+  }
+  .back-link:hover { border-color: var(--signal); color: var(--signal); }
+
+  /* SEASON TAG */
+  .season-tag {
+    display: inline-block; padding: 4px 12px;
+    border: 1px solid var(--signal); font-size: 9px; letter-spacing: 3px;
+    color: var(--signal); text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* PROGRESS BAR */
+  .lore-progress {
+    margin-bottom: 40px; padding: 20px; background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  .progress-label { font-size: 10px; letter-spacing: 3px; color: var(--muted); margin-bottom: 10px; }
+  .progress-bar { height: 2px; background: var(--border); position: relative; }
+  .progress-fill { height: 100%; background: var(--signal); width: 33%; transition: width 0.8s 4s ease; }
+  .progress-text { font-size: 10px; letter-spacing: 2px; color: var(--signal); margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- INTRO GLITCH -->
+<div id="intro">
+  <div class="intro-static"></div>
+  <div class="intro-text">SIGNAAL GEVONDEN<br>KDSN — KANAAL 04</div>
+  <div class="intro-sub">VERBINDING WORDT GEMAAKT...</div>
+</div>
+
+<div class="scanlines"></div>
+<div class="noise"></div>
+
+<div class="crt">
+
+  <!-- STATION HEADER -->
+  <div class="station-header">
+    <div class="station-id">K D S N</div>
+    <div class="station-sub">
+      KANAAL 04 · HEERHUGOWAARD DISTRICT<br>
+      UITZENDING ONDERBROKEN SINDS 14 NOVEMBER 1987
+    </div>
+    <div class="on-air">ARCHIEF ACTIEF</div>
+  </div>
+
+  <!-- LORE PROGRESS -->
+  <div class="lore-progress">
+    <div class="progress-label">SEIZOEN 01 LORE — VOORTGANG</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text">1 VAN 3 TRANSMISSIES GEVONDEN · SCAN MEER QR-CODES VOOR MEER</div>
+  </div>
+
+  <!-- TRANSMISSION 01 -->
+  <div class="transmission">
+    <div class="tx-header">
+      <span class="tx-id">TX-001 · S01-HOODIE</span>
+      <span class="tx-date">14 NOV 1987 · 23:47</span>
+    </div>
+    <div class="tx-body">
+      <div class="season-tag">SEIZOEN 01 — STATIC</div>
+      <div class="tx-title">DE NACHT DAT HET SIGNAAL UITVIEL</div>
+
+      <div class="glitch-frame">
+        <div class="frame-corrupt"></div>
+        <div class="glitch-frame-text">UITZENDING<br>ONDERBROKEN</div>
+        <div class="frame-label">KDSN · 23:47:12</div>
+      </div>
+
+      <p class="tx-text">
+        Het begon als ruis. Niet de gewone ruis — de warme statische sneeuw die je verwacht als een signaal wegvalt. Dit was anders. <em>Dit had een ritme.</em><br><br>
+        Presentator <span class="redacted">███████ de Vries</span> was halverwege het avondnieuws toen de camera's begonnen te trillen. Technici in de regiekamer zagen de signaalsterkte dalen naar nul — maar de rode opnamelampjes bleven branden.<br><br>
+        Niemand weet wat er in die laatste <em>vier minuten en zeventien seconden</em> werd uitgezonden. De opnameband van die nacht is officieel vermist. Maar sommige kijkers... onthouden nog iets.
+      </p>
+
+      <div class="audio-player" onclick="toggleAudio(this)">
+        <button class="play-btn">▶</button>
+        <div class="audio-info">
+          <div class="audio-title">LAATSTE NOODOPROEP — KDSN REGIE · 23:51</div>
+          <div class="audio-duration">04:17 · GEVONDEN OPNAME</div>
+        </div>
+        <div class="audio-bars">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+      </div>
+
+      <p class="tx-text" style="margin-top:16px;font-size:11px;color:var(--muted);">
+        <span class="coords">52.6741° N, 4.8372° O</span><br>
+        Coördinaten gevonden in de archieflade van KDSN-producent <span class="redacted">██████</span>. Onbekende locatie. Seizoen 02 geeft meer context.
+      </p>
+    </div>
+  </div>
+
+  <!-- TRANSMISSION 02 — LOCKED -->
+  <div class="transmission" style="opacity:0.4;">
+    <div class="tx-header">
+      <span class="tx-id">TX-002 · S01-LONGSLEEVE</span>
+      <span class="tx-date">🔒 VERGRENDELD</span>
+    </div>
+    <div class="tx-body">
+      <div class="tx-title" style="color:var(--muted);">SCAN DE QR-CODE OP DE LONGSLEEVE</div>
+      <p class="tx-text">Deze transmissie is vergrendeld. Scan de QR-code op de KDSN Longsleeve om deze transmissie te ontgrendelen.</p>
+    </div>
+  </div>
+
+  <!-- TRANSMISSION 03 — LOCKED -->
+  <div class="transmission" style="opacity:0.4;">
+    <div class="tx-header">
+      <span class="tx-id">TX-003 · S01-TEE</span>
+      <span class="tx-date">🔒 VERGRENDELD</span>
+    </div>
+    <div class="tx-body">
+      <div class="tx-title" style="color:var(--muted);">SCAN DE QR-CODE OP HET T-SHIRT</div>
+      <p class="tx-text">Drie transmissies. Drie kledingstukken. Samen onthullen ze het volledige verhaal van wat er op 14 november 1987 werkelijk is gebeurd.</p>
+    </div>
+  </div>
+
+  <hr class="tx-divider">
+
+  <p style="font-size:11px;line-height:2;color:var(--muted);text-align:center;">
+    KDSN ARCHIEF · ALLE MATERIAAL EIGENDOM VAN DEAD SIGNAL<br>
+    GEBRUIK ZONDER TOESTEMMING NIET TOEGESTAAN<br><br>
+    <span style="color:#2a2a2a;">SEIZOEN 02 LORE VERSCHIJNT ALS INTERFERENCE UITKOMT</span>
+  </p>
+
+  <div style="text-align:center;">
+    <a href="index.html" class="back-link">← TERUG NAAR DEAD SIGNAL</a>
+  </div>
+
+</div>
+
+<script>
+  function toggleAudio(el) {
+    const btn = el.querySelector('.play-btn');
+    if (btn.textContent === '▶') {
+      btn.textContent = '■';
+      btn.style.background = '#ebebeb';
+      // In production: speel echte audio
+    } else {
+      btn.textContent = '▶';
+      btn.style.background = 'var(--signal)';
+      btn.style.color = '#000';
+    }
+  }
+
+  // Unlock intro after animation
+  setTimeout(() => {
+    document.getElementById('intro').style.display = 'none';
+  }, 4200);
+</script>
+</body>
+</html>
